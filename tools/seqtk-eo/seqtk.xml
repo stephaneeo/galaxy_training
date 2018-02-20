@@ -1,0 +1,85 @@
+<tool id="seqtk-eo" name="SeqTk seq" version="0.1.1">
+  <description>Do funky FastA/Q manipulations</description>
+  <requirements>
+    <requirement type="package" version="1.2">seqtk</requirement>
+  </requirements>
+  <command detect_errors="aggressive">
+    <![CDATA[
+      seqtk seq
+      #if $fastaorq_input.selector == 'reverse':
+          -r '$fastaorq_input.fastaq_input' > $fastaq_output
+      #else:
+          -a '$fastaorq_input.fastq_input' > $fasta_output
+      #end if
+]]>
+  </command>
+  <inputs>
+    <conditional name="fastaorq_input">
+      <param name="selector" type="select" label="Watcha wanna do?">
+        <option value="reverse">Get the reverse complement of my file</option>
+        <option value="2fasta">Convert my FastQ file to a FastA file</option>
+      </param>
+      <when value="reverse">
+        <param name="fastaq_input" type="data" format="fasta" label=""/>
+      </when>
+      <when value="2fasta">
+        <param name="fastq_input" type="data" format="fastq" label=""/>
+      </when>
+    </conditional>
+  </inputs>
+  <outputs>
+    <data name="fasta_output" format="fasta" label="${tool.name}:2fasta on ${on_string}">
+      <filter>fastaorq_input['selector'] == '2fasta'</filter>
+    </data>
+    <data name="fastaq_output" format="fasta" label="${tool.name}:reverse on ${on_string}">
+      <filter>fastaorq_input['selector'] == 'reverse'</filter>
+    </data>
+  </outputs>
+  <tests>
+    <test>
+      <conditional name="fastaorq_input">
+        <param name="selector" value="reverse" />
+        <param name="fastaq_input" value="sample.fa" ftype="fasta"/>
+      </conditional>
+      <output name="fastaq_output" file="reverse.fa" ftype="fasta"/>
+    </test>
+    <test>
+      <conditional name="fastaorq_input">
+        <param name="selector" value="2fasta" />
+        <param name="fastq_input" value="sample.fq" ftype="fastq"/>
+      </conditional>
+      <output name="fasta_output" file="2fasta.fa" ftype="fasta"/>
+    </test>
+  </tests>
+  <help>
+    <![CDATA[*SeqTk seq*
+
+      Usage:   seqtk seq [options] <in.fq>|<in.fa>
+
+Options: -q INT    mask bases with quality lower than INT [0]
+       -X INT    mask bases with quality higher than INT [255]
+       -n CHAR   masked bases converted to CHAR; 0 for lowercase [0]
+       -l INT    number of residues per line; 0 for 2^32-1 [0]
+       -Q INT    quality shift: ASCII-INT gives base quality [33]
+       -s INT    random seed (effective with -f) [11]
+       -f FLOAT  sample FLOAT fraction of sequences [1]
+       -M FILE   mask regions in BED or name list FILE [null]
+       -L INT    drop sequences with length shorter than INT [0]
+       -c        mask complement region (effective with -M)
+       -r        reverse complement
+       -A        force FASTA output (discard quality)
+       -C        drop comments at the header lines
+       -N        drop sequences containing ambiguous bases
+       -1        output the 2n-1 reads only
+       -2        output the 2n reads only
+       -V        shift quality by '(-Q) - 33'
+       -U        convert all bases to uppercases
+       -S        strip of white spaces in sequences
+
+    ]]>
+  </help>
+  <citations>
+    <citation type="doi">10.1371/journal.pone.0163962</citation>
+  </citations>
+
+</tool>
